@@ -1,81 +1,101 @@
-import tkinter as tk
+import sys
 import random
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QPushButton, QLineEdit, QHBoxLayout
+from PyQt5.QtGui import QFont
+from PyQt5.QtCore import Qt
 
-# Inicializa o saldo e o valor do giro
-balance = 100
-spin_value = 10
+class SlotMachine(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.balance = 100
+        self.spin_value = 10
 
-# Função para girar os rolos
-def spin():
-    global balance
-    symbols = ["🍒", "🔔", "🍋", "⭐", "🍉", "7️⃣"]
-    result1 = random.choice(symbols)
-    result2 = random.choice(symbols)
-    result3 = random.choice(symbols)
+        self.initUI()
 
-    reel1.config(text=result1)
-    reel2.config(text=result2)
-    reel3.config(text=result3)
+    def initUI(self):
+        self.setWindowTitle('Slot Machine')
+        self.setGeometry(100, 100, 400, 300)
+        self.setStyleSheet("background-color: #2c3e50; color: #ecf0f1;")
 
-    if result1 == result2 == result3:
-        balance += spin_value * 10
-        result_label.config(text="Jackpot!")
-    else:
-        balance -= spin_value
-        result_label.config(text="Try Again!")
+        layout = QVBoxLayout()
 
-    balance_label.config(text=f"Balance: ${balance}")
+        title = QLabel('Slot Machine')
+        title.setFont(QFont('Arial', 30))
+        title.setAlignment(Qt.AlignCenter)
+        layout.addWidget(title)
 
-# Função para atualizar o valor do giro
-def update_spin_value(value):
-    global spin_value
-    spin_value = int(value)
+        self.slot_layout = QHBoxLayout()
+        self.reel1 = QLabel("🍒")
+        self.reel2 = QLabel("🍒")
+        self.reel3 = QLabel("🍒")
+        
+        for reel in [self.reel1, self.reel2, self.reel3]:
+            reel.setFont(QFont('Arial', 50))
+            reel.setAlignment(Qt.AlignCenter)
+            reel.setStyleSheet("background-color: #34495e; border-radius: 10px; padding: 10px;")
+            self.slot_layout.addWidget(reel)
 
-# Configuração da janela principal
-root = tk.Tk()
-root.title("Slot Machine")
-root.configure(bg="#2c3e50")
+        layout.addLayout(self.slot_layout)
 
-# Container principal
-container = tk.Frame(root, bg="#2c3e50")
-container.pack(expand=True)
+        self.spin_button = QPushButton('Spin')
+        self.spin_button.setFont(QFont('Arial', 20))
+        self.spin_button.setStyleSheet("background-color: #e74c3c; border-radius: 5px; padding: 10px;")
+        self.spin_button.clicked.connect(self.spin)
+        layout.addWidget(self.spin_button, alignment=Qt.AlignCenter)
 
-# Máquina caça-níqueis
-slot_machine = tk.Frame(container, bg="#2c3e50")
-slot_machine.pack(pady=20)
+        self.balance_label = QLabel(f"Balance: ${self.balance}")
+        self.balance_label.setFont(QFont('Arial', 20))
+        self.balance_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(self.balance_label)
 
-reel1 = tk.Label(slot_machine, text="🍒", font=("Arial", 50), bg="#34495e", fg="#ecf0f1", width=3, height=2)
-reel1.pack(side=tk.LEFT, padx=10)
+        self.spin_value_label = QLabel("Spin Value:")
+        self.spin_value_label.setFont(QFont('Arial', 20))
+        layout.addWidget(self.spin_value_label)
 
-reel2 = tk.Label(slot_machine, text="🍒", font=("Arial", 50), bg="#34495e", fg="#ecf0f1", width=3, height=2)
-reel2.pack(side=tk.LEFT, padx=10)
+        self.spin_value_entry = QLineEdit()
+        self.spin_value_entry.setFont(QFont('Arial', 20))
+        self.spin_value_entry.setText(str(self.spin_value))
+        layout.addWidget(self.spin_value_entry)
 
-reel3 = tk.Label(slot_machine, text="🍒", font=("Arial", 50), bg="#34495e", fg="#ecf0f1", width=3, height=2)
-reel3.pack(side=tk.LEFT, padx=10)
+        self.update_button = QPushButton('Update Spin Value')
+        self.update_button.setFont(QFont('Arial', 20))
+        self.update_button.setStyleSheet("background-color: #3498db; border-radius: 5px; padding: 10px;")
+        self.update_button.clicked.connect(self.update_spin_value)
+        layout.addWidget(self.update_button, alignment=Qt.AlignCenter)
 
-# Botão de girar
-spin_button = tk.Button(container, text="Spin", font=("Arial", 20), bg="#e74c3c", fg="white", command=spin)
-spin_button.pack(pady=10)
+        self.result_label = QLabel("")
+        self.result_label.setFont(QFont('Arial', 20))
+        self.result_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(self.result_label)
 
-# Campo para exibir o saldo
-balance_label = tk.Label(container, text=f"Balance: ${balance}", font=("Arial", 20), bg="#2c3e50", fg="#ecf0f1")
-balance_label.pack()
+        self.setLayout(layout)
 
-# Campo para alterar o valor do giro
-spin_value_label = tk.Label(container, text="Spin Value:", font=("Arial", 20), bg="#2c3e50", fg="#ecf0f1")
-spin_value_label.pack(pady=(10, 0))
+    def spin(self):
+        symbols = ["🍒", "🔔", "🍋", "⭐", "🍉", "7️⃣"]
+        result1 = random.choice(symbols)
+        result2 = random.choice(symbols)
+        result3 = random.choice(symbols)
 
-spin_value_entry = tk.Entry(container, font=("Arial", 20), bg="#34495e", fg="#ecf0f1")
-spin_value_entry.pack()
-spin_value_entry.insert(0, spin_value)
+        self.reel1.setText(result1)
+        self.reel2.setText(result2)
+        self.reel3.setText(result3)
 
-# Botão para atualizar o valor do giro
-update_button = tk.Button(container, text="Update Spin Value", font=("Arial", 20), bg="#3498db", fg="white", command=lambda: update_spin_value(spin_value_entry.get()))
-update_button.pack(pady=10)
+        if result1 == result2 == result3:
+            self.balance += self.spin_value * 10
+            self.result_label.setText("Jackpot!")
+            self.result_label.setStyleSheet("color: green;")
+        else:
+            self.balance -= self.spin_value
+            self.result_label.setText("Try Again!")
+            self.result_label.setStyleSheet("color: red;")
 
-# Resultado
-result_label = tk.Label(container, text="", font=("Arial", 20), bg="#2c3e50", fg="#ecf0f1")
-result_label.pack()
+        self.balance_label.setText(f"Balance: ${self.balance}")
 
-# Inicia a aplicação
-root.mainloop()
+    def update_spin_value(self):
+        self.spin_value = int(self.spin_value_entry.text())
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    ex = SlotMachine()
+    ex.show()
+    sys.exit(app.exec_())

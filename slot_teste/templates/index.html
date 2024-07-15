@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slot Machine</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="slot-machine">
+            <div class="highlight" id="highlight"></div>
+            <div class="reel-row">
+                <div class="reel" id="reel1-1">🍒</div>
+                <div class="reel" id="reel1-2">🍒</div>
+                <div class="reel" id="reel1-3">🍒</div>
+            </div>
+            <div class="reel-row">
+                <div class="reel" id="reel2-1">🍒</div>
+                <div class="reel" id="reel2-2">🍒</div>
+                <div class="reel" id="reel2-3">🍒</div>
+            </div>
+            <div class="reel-row">
+                <div class="reel" id="reel3-1">🍒</div>
+                <div class="reel" id="reel3-2">🍒</div>
+                <div class="reel" id="reel3-3">🍒</div>
+            </div>
+        </div>
+        <div class="controls">
+            <p id="balance">Balance: $100</p>
+            <div class="bet-control">
+                <button onclick="decreaseBet()">-</button>
+                <span id="spin-value">0.20</span>
+                <button onclick="increaseBet()">+</button>
+            </div>
+            <button onclick="spin()">Spin</button>
+            <p id="result"></p>
+        </div>
+    </div>
+    <script>
+        let balance = 100;
+        let spinValue = 0.20;
+        const betValues = [0.20, 0.40, 0.60, 0.80, 1, 2, 4, 5, 8, 10, 12, 14, 16, 20, 25, 30, 35, 40, 50, 60, 70, 80, 90, 100, 150, 300];
+        let betIndex = 0;
+        const symbols = ["🍉", "🍒", "🍋", "⭐", "🔔", "7️⃣"];
+
+        function spin() {
+            const reels = document.querySelectorAll('.reel');
+            document.getElementById('highlight').style.display = 'none';  // Hide the highlight lines
+            reels.forEach(reel => startSpinning(reel));
+
+            fetch('/spin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ balance: balance, spinValue: spinValue })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const { results, balance: newBalance, message } = data;
+
+                results.forEach((row, rowIndex) => {
+                    row.forEach((result, colIndex) => {
+                        const reelId = `reel${rowIndex + 1}-${colIndex + 1}`;
+                        setTimeout(() => {
+                            stopSpinning(document.getElementById(reelId), result);
+                        }, 2000 + rowIndex * 300 + colIndex * 100);
+                    });
+                });
+
+                setTimeout(() => {
+                    document.getElementById('result').textContent = message;
+                    document.getElementById('balance').textContent = `Balance: $${newBalance.toFixed(2)}`;
+                    balance = newBalance;
+                    showHighlight(data.winningLines);
+                }, 3500);
+            });
+        }
+
+        function startSpinning(reel) {
+            reel.spinningInterval = setInterval(() => {
+                reel.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+            }, 200);
+        }
+
+        function stopSpinning(reel, result) {
+            clearInterval(reel.spinningInterval);
+            reel.textContent = result;
+        }
+
+        function showHighlight(winningLines) {
+            const highlight = document.getElementById('highlight');
+            winningLines.forEach(line => {
+                if (line === 'row1') {
+                    highlight.classList.add('highlight-row1');
+                } else if (line === 'row2') {
+                    highlight.classList.add('highlight-row2');
+                } else if (line === 'row3') {
+                    highlight.classList.add('highlight-row3');
+                } else if (line === 'diag1') {
+                    highlight.classList.add('highlight-diag1');
+                } else if (line === 'diag2') {
+                    highlight.classList.add('highlight-diag2');
+                }
+            });
+            highlight.style.display = 'block';
+        }
+
+        function increaseBet() {
+            if (betIndex < betValues.length - 1) {
+                betIndex++;
+                spinValue = betValues[betIndex];
+                document.getElementById('spin-value').textContent = spinValue.toFixed(2);
+            }
+        }
+
+        function decreaseBet() {
+            if (betIndex > 0) {
+                betIndex--;
+                spinValue = betValues[betIndex];
+                document.getElementById('spin-value').textContent = spinValue.toFixed(2);
+            }
+        }
+    </script>
+</body>
+</html>
