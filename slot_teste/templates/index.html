@@ -34,8 +34,31 @@
                 <button onclick="increaseBet()">+</button>
             </div>
             <button onclick="spin()">Spin</button>
+            <button id="info-button" onclick="showInfo()">?</button>
             <p id="result"></p>
         </div>
+    </div>
+    <div id="info-modal">
+        <h3>Formas de Pagamento</h3>
+        <p>2 símbolos iguais:</p>
+        <ul>
+            <li>🍉: x0.20</li>
+            <li>🍒: x0.35</li>
+            <li>🍋: x0.45</li>
+            <li>⭐: x0.75</li>
+            <li>🔔: x1.75</li>
+            <li>7️⃣: x3.25</li>
+        </ul>
+        <p>3 símbolos iguais:</p>
+        <ul>
+            <li>🍉: x1.40</li>
+            <li>🍒: x1.70</li>
+            <li>🍋: x2.25</li>
+            <li>⭐: x4.50</li>
+            <li>🔔: x8.50</li>
+            <li>7️⃣: x20.00</li>
+        </ul>
+        <button onclick="closeInfo()">Close</button>
     </div>
     <script>
         let balance = 100;
@@ -58,7 +81,7 @@
             })
             .then(response => response.json())
             .then(data => {
-                const { results, balance: newBalance, message } = data;
+                const { results, balance: newBalance, message, winningLines } = data;
 
                 results.forEach((row, rowIndex) => {
                     row.forEach((result, colIndex) => {
@@ -73,7 +96,7 @@
                     document.getElementById('result').textContent = message;
                     document.getElementById('balance').textContent = `Balance: $${newBalance.toFixed(2)}`;
                     balance = newBalance;
-                    showHighlight(data.winningLines);
+                    showHighlight(winningLines);
                 }, 3500);
             });
         }
@@ -91,6 +114,7 @@
 
         function showHighlight(winningLines) {
             const highlight = document.getElementById('highlight');
+            highlight.className = ''; // Reset highlight class
             winningLines.forEach(line => {
                 if (line === 'row1') {
                     highlight.classList.add('highlight-row1');
@@ -121,6 +145,14 @@
                 spinValue = betValues[betIndex];
                 document.getElementById('spin-value').textContent = spinValue.toFixed(2);
             }
+        }
+
+        function showInfo() {
+            document.getElementById('info-modal').style.display = 'block';
+        }
+
+        function closeInfo() {
+            document.getElementById('info-modal').style.display = 'none';
         }
     </script>
 </body>

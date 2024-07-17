@@ -58,11 +58,13 @@ def spin():
         win_amount += spin_value * payouts_3[results[1][1]]
         winning_lines.append('diag2')
 
+    # Deduzir a aposta do saldo
+    balance -= spin_value
+
     if win_amount > 0:
         balance += round(win_amount, 2)
         message = f"You Win! Total Win: ${win_amount:.2f}"
     else:
-        balance -= round(spin_value, 2)
         message = "Try Again!"
 
     return jsonify({
